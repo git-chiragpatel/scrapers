@@ -1,28 +1,34 @@
-import time
-from selenium import webdriver
 from bs4 import BeautifulSoup
-import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import time
+from selenium.webdriver.chrome.service import Service
 
-driver = webdriver.Chrome()
-driver.get("https://tnou.ac.in/news-and-events/")
+driver_service = Service('chromedriver.exe')
+driver = webdriver.Chrome(service=driver_service)
 
-time.sleep(3)
+success = []
+failure = []
+scrapers_report = []
+news_articles = []
 
-page = requests.get(driver.current_url)
-soup = BeautifulSoup(page.content, "html.parser")
-
-# Find the news section and print the headlines
-news_section = soup.find("div", class_="et_pb_column et_pb_column_1_2 et_pb_column_0 et_pb_css_mix_blend_mode_passthrough")
-news_headlines = news_section.find_all("h2", class_="entry-title")
-
-for headline in news_headlines:
-    print(headline.text)
-
-# Find the events section and print the headlines
-events_section = soup.find("div", class_="et_pb_column et_pb_column_1_2 et_pb_column_1 et_pb_css_mix_blend_mode_passthrough")
-events_headlines = events_section.find_all("h2", class_="entry-title")
-
-for headline in events_headlines:
-    print(headline.text)
-
-driver.quit()
+try:
+    url = "https://tnou.ac.in/news-and-events/"
+    base_url = "https://tnou.ac.in/"
+    name = 'Tamil Nadu Open University'
+    scrapers_report.append([url,base_url,name])
+    driver.get(url)
+    time.sleep(3)
+    results = driver.find_elements(By.CLASS_NAME,"entry-title")
+    for i in results:
+        headline = i.find_element(By.TAG_NAME , "a").text
+        link = i.find_element(By.TAG_NAME , "a").get_attribute('href')
+        if "http" not in link:
+            link = base_url + link
+        news_articles.append(("Tamil Nadu Open University",headline,link))
+    success.append('Tamil Nadu Open University')
+    driver.quit()
+except Exception as e:
+    driver.quit()
+    failure.append((name,e))
+    pass
